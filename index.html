@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html ng-app="talkToMe">
+<head>
+	<meta charset="utf-8" />
+	<title>Talk To Me</title>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.10/angular.min.js"></script>
+
+	<script>
+		var CYCLE_LENGTH = 60 * 30,
+		    PAUSE_LENGTH = 60 * 5;
+		
+		    talk = angular.module("talkToMe", []);
+
+		talk.controller('TalkCtrl', function ($scope, $interval) {
+			var timeToPause,
+			    updateCountdown;
+
+			timeToPause = function () {
+				var cycleLength = CYCLE_LENGTH * 1000,
+				    currentCycle = (new Date()).getTime() % cycleLength,
+				    pauseLength = PAUSE_LENGTH * 1000;
+
+				return (cycleLength - currentCycle - pauseLength) / 1000;
+			};
+
+			updateCountdown = function () {
+				var countDown = timeToPause();
+
+				if (countDown < 0) {
+					$scope.canTalk = true;
+					countDown = PAUSE_LENGTH - countDown;
+				} else {
+					$scope.canTalk = false;
+				}
+
+				$scope.minutes = parseInt(countDown / 60);
+				$scope.seconds = countDown % 60;
+			};
+
+			(function () {
+				updateCountdown();
+				$interval(updateCountdown, 1000);
+			}());
+		});
+
+		talk.filter('minute', function () {
+			return function (minute) {
+				minute = parseInt(minute, 10);
+
+				if (minute < 10) {
+					minute = '0' + minute;
+				}
+
+				return minute;
+			};
+		});
+	</script>
+
+	<style>
+		html, body {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+
+			font-family: sans-serif;
+			text-align: center;
+		}
+
+		.content {
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+
+			background-size: cover;
+			background-position: center;
+		}
+
+		.can-talk {
+			background-image: url(bg2.gif);
+		}
+
+		.can-talk.can-talk-bg2 {
+			background-image: url(bg3.gif);
+		}
+
+		.cant-talk {
+			background-image: url(bg.gif);
+		}
+
+		h1, h2 {
+			flex-grow: 0;
+			flex-shrink: 0;
+		}
+
+		h1 {
+			margin: 40px 0 10px;
+			font-size: 100px;
+			font-weight: bold;
+			text-shadow: 0px 0px 20px rgba(255, 255, 255, 1);
+		}
+
+		h2 {
+			margin: 10px 0 20px;
+			font-size: 70px;
+			font-weight: bold;
+			text-shadow: 0px 0px 20px rgba(255, 255, 255, 1);
+		}
+
+		.logo {
+			flex-grow: 1;
+			display: flex;
+			align-items: stretch;
+		}
+
+		.logo img {
+			width: 100%;
+			margin: 200px 0;
+		}
+	</style>
+</head>
+<body ng-controller="TalkCtrl">
+	<div ng-if="canTalk" class="content can-talk" ng-class="{'can-talk-bg2': (minutes % 2)}">
+		<h1>Can you talk to me?</h1>
+
+		<h2>Yes, for {{ minutes|number:0 }}:{{ seconds|minute }} <ng-pluralize when="{'0': 'minutes', '1': 'minute', 'other': 'minutes'}" count="minutes"></ng-pluralize></h2>
+
+		<div class="logo">
+			<img src="logo-green.svg">
+		</div>
+	</div>
+
+	<div ng-if="!canTalk" class="content cant-talk">
+		<h1>Can you talk to me?</h1>
+
+		<h2>No, for {{ minutes|number:0 }}:{{ seconds|minute }} <ng-pluralize when="{'0': 'minutes', '1': 'minute', 'other': 'minutes'}" count="minutes"></ng-pluralize></h2>
+
+		<div class="logo">
+			<img src="logo-red.svg">
+		</div>
+	</div>
+</body>
+</html>
