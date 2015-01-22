@@ -29,7 +29,7 @@
 
 				if (countDown < 0) {
 					$scope.canTalk = true;
-					countDown = PAUSE_LENGTH - countDown;
+					countDown = PAUSE_LENGTH + countDown;
 				} else {
 					$scope.canTalk = false;
 				}
